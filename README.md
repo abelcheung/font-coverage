@@ -35,9 +35,10 @@ Supplementary Private Use Area-A (U+F0000-U+FFFFF) => 0 / 0 / 58
 ```
 
 Numbers appearing in output represents, in order:
-1.  Total number of code points assigned for specific Unicode range
-1.  Number of glyphs *assigned* in unicode standard for that range
-1.  Number of glyphs *not assigned* in unicode standard for that range
+
+1. Total number of code points assigned for specific Unicode range
+1. Number of glyphs *assigned* in unicode standard for that range
+1. Number of glyphs *not assigned* in unicode standard for that range
 
 So the output snippet above means all Music symbol related unicode ranges are 100% covered (though not for other ranges), and there are 11 extra glyphs in Musical Symbols not used by current version of Unicode.
 
