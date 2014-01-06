@@ -25,6 +25,7 @@ use Getopt::Std;
 my ($csv, $req_uni_ver, @f, $c);
 my %char_count = ();
 my $default_uni_ver = '6.3.0';
+my $output_csv = 0;
 
 my %opts = ();
 getopts ('hilsu:z', \%opts);
@@ -90,68 +91,104 @@ sub bitsum {
 	return (($a + ($a >> 3)) & 030707070707) % 63;
 }
 
-sub populate_char_count {
-	my ($char_count, @f) = @_;
+sub populate_font_mapping {
+	my ($font_mapping, @f) = @_;
 
-	foreach my $ttf (@f) {
+	while (my $font = pop @f) {
+		my ($fontname, $ms_cmap);
 
-		my ($fontname, $ms_cmap, @font_mapping);
-
-		$fontname = $ttf->{'name'}->read->find_name(4); # 4 = Full font name
-
-		if (!$ttf->{'cmap'}) {
+		$fontname = $font->{'name'}->find_name(4);
+		if (!$font->{'cmap'}) {
 			print STDERR "Cmap table not found for '$fontname', abandon parsing\n";
 			next;
 		}
-		if (defined $char_count->{$fontname}) {
-			print STDERR "Font '$fontname' has already been scanned, skipping\n";
-			next;
-		}
 
-		print STDERR "Start scanning " . $fontname ." ...";
+		print STDERR "\nStart scanning " . $fontname ." ...";
 
-		$opts{'i'} and $ttf->{'loca'}->read;
-		$ms_cmap = $ttf->{'cmap'}->read->find_ms; # Microsoft unicode cmap table
+		$opts{'i'} and $font->{'loca'}->read;
+		$ms_cmap = $font->{'cmap'}->read->find_ms; # Microsoft unicode cmap table
 
 		foreach (keys %{$ms_cmap->{'val'}}) {
 			# check if glyph really exists with -i option
-			$font_mapping[$_>>5] |= (1<<($_ & 0x1F)) if ((!$opts{'i'}) ||
-				($ttf->{'loca'}->{'glyphs'}[$ms_cmap->{'val'}{$_}]));
-		}
-
-		foreach my $blockname (keys %{$FontCoverage::block_list}) {
-
-			my $r1 = $FontCoverage::block_list->{$blockname}{'start'};
-			my $r2 = $FontCoverage::block_list->{$blockname}{'end'};
-
-			my @range_mask = (0xFFFFFFFF) x (($r2>>5) - ($r1>>5) + 1);
-			$range_mask[0] &= ~((1<<($r1 & 0x1F)) - 1);
-			$range_mask[$#range_mask] >>= (31-($r2 & 0x1F));
-
-			$char_count->{$fontname}{$blockname}{'expected'} = 0;
-			$char_count->{$fontname}{$blockname}{'unexpected'} = 0;
-
-			# essentially count bits in (font_map & unicode_assign_map & range_mask)
-			for my $i (($r1>>5) .. ($r2>>5)) {
-				next if (!$font_mapping[$i]);
-				my $bits = $font_mapping[$i] & $range_mask[$i-($r1>>5)];
-				my $assign_map = $FontCoverage::assign_map->[$i];
-				my $count = $char_count->{$fontname}{$blockname};
-
-				if (!$assign_map) {
-					$count->{'unexpected'} += bitsum($bits);
-				} elsif ($assign_map == 0xFFFFFFFF) {
-					$count->{'expected'}   += bitsum($bits);
-				} else {
-					$count->{'expected'}   += bitsum($bits & $assign_map);
-					$count->{'unexpected'} += bitsum($bits & ~$assign_map);
-				}
-			}
+			$font_mapping->[$_>>5] |= (1<<($_ & 0x1F)) if ((!$opts{'i'}) ||
+				($font->{'loca'}->{'glyphs'}[$ms_cmap->{'val'}{$_}]));
 		}
 		print STDERR " Done.\n";
+	}
+}
 
-		# cause error for shared cmap in TTC
-#		$ttf->release;
+sub calculate_char_count {
+	my $font_mapping = $_[0];
+	my %count = ();
+
+	foreach my $blockname (keys %{$FontCoverage::block_list}) {
+
+		my $r1 = $FontCoverage::block_list->{$blockname}{'start'};
+		my $r2 = $FontCoverage::block_list->{$blockname}{'end'};
+
+		my @range_mask = (0xFFFFFFFF) x (($r2>>5) - ($r1>>5) + 1);
+		$range_mask[0] &= ~((1<<($r1 & 0x1F)) - 1);
+		$range_mask[$#range_mask] >>= (31-($r2 & 0x1F));
+
+		$count{$blockname}{'expected'} = 0;
+		$count{$blockname}{'unexpected'} = 0;
+
+		# essentially count bits in (font_map & unicode_assign_map & range_mask)
+		for my $i (($r1>>5) .. ($r2>>5)) {
+			next if (!$font_mapping->[$i]);
+			my $bits = $font_mapping->[$i] & $range_mask[$i-($r1>>5)];
+			my $assign_map = $FontCoverage::assign_map->[$i];
+
+			if (!$assign_map) {
+				$count{$blockname}{'unexpected'} += bitsum($bits);
+			} elsif ($assign_map == 0xFFFFFFFF) {
+				$count{$blockname}{'expected'}   += bitsum($bits);
+			} else {
+				$count{$blockname}{'expected'}   += bitsum($bits & $assign_map);
+				$count{$blockname}{'unexpected'} += bitsum($bits & ~$assign_map);
+			}
+		}
+	}
+	return %count;
+}
+
+sub print_output {
+	my ($count, $fontname, $dummy) = @_;
+	my $blocks = $FontCoverage::block_list;
+
+	print "\n=== " . $fontname . "\n\n" if ($fontname);
+
+	# CSV header
+	if ($output_csv) {
+		$csv->combine(('Block Name', 'Start', 'End', 'Total codepoints', 'Assigned', 'Reserved'));
+		print $csv->string()."\n";
+	}
+
+	foreach (sort {$blocks->{$a}{'start'} <=> $blocks->{$b}{'start'}} keys %{$count}) {
+		# Don't print unicode blocks for which the font has no glyph
+		if ( !$opts{'z'} ) {
+			next if ( (!$count->{$_}{'expected'}) &&
+			          (!$count->{$_}{'unexpected'}) );
+		}
+		if ($output_csv) {
+			$csv->combine((
+					$_,
+					sprintf ("U+%04X", $blocks->{$_}{'start'}),
+					sprintf ("U+%04X", $blocks->{$_}{'end'}),
+					$blocks->{$_}{'assigned_total'},
+					$count->{$_}{'expected'},
+					$count->{$_}{'unexpected'}
+				));
+			print $csv->string()."\n";
+		} else {
+			printf "%s (U+%04X-U+%04X) => %d / %d / %d\n",
+					$_,
+					$blocks->{$_}{'start'},
+					$blocks->{$_}{'end'},
+					$blocks->{$_}{'assigned_total'},
+					$count->{$_}{'expected'},
+					$count->{$_}{'unexpected'};
+		}
 	}
 }
 
@@ -180,53 +217,22 @@ if (!@f) {
 	exit (2);
 }
 
-populate_char_count (\%char_count, @f);
-
 if ($opts{'s'}) {
 	use Text::CSV;
+	$output_csv = 1;
 	$csv = Text::CSV->new();
 }
 
-foreach my $fontname (keys %char_count) {
-	print "\n=== " . $fontname . "\n\n";
+while (my $font = pop @f) {
+	my @font_mapping = ();
+	my %char_count;
+	my $fontname = $font->{'name'}->read->find_name(4); # 4 = Full font name
 
-	# CSV header
-	if ($opts{'s'}) {
-		$csv->combine(('Block Name', 'Start', 'End', 'Total codepoints', 'Assigned', 'Reserved'));
-		print $csv->string()."\n";
-	}
+	populate_font_mapping (\@font_mapping, ($font));
+	next if (!@font_mapping);
 
-	my $blocks = $FontCoverage::block_list;
-	my $count  = $char_count{$fontname};
-
-	foreach (sort {$blocks->{$a}{'start'} <=> $blocks->{$b}{'start'}} keys %{$count}) {
-		# Don't print unicode blocks for which the font has no glyph
-		if ( !$opts{'z'} ) {
-			next if ( (!$count->{$_}{'expected'}) &&
-			          (!$count->{$_}{'unexpected'}) );
-		}
-		if ( $opts{'s'} ) {
-			$csv->combine((
-					$_,
-					sprintf ("U+%04X", $blocks->{$_}{'start'}),
-					sprintf ("U+%04X", $blocks->{$_}{'end'}),
-					$blocks->{$_}{'assigned_total'},
-					$count->{$_}{'expected'},
-					$count->{$_}{'unexpected'}
-				));
-			print $csv->string()."\n";
-		} else {
-			printf "%s (U+%04X-U+%04X) => %d / %d / %d\n",
-					$_,
-					$blocks->{$_}{'start'},
-					$blocks->{$_}{'end'},
-					$blocks->{$_}{'assigned_total'},
-					$count->{$_}{'expected'},
-					$count->{$_}{'unexpected'};
-		}
-	}
+	%char_count = calculate_char_count (\@font_mapping);
+	print_output (\%char_count, $fontname);
 }
-
-print "\n";
 
 exit 0;
