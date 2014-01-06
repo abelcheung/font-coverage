@@ -22,15 +22,18 @@ use Font::TTF::Font;
 use Font::TTF::Ttc;
 use Getopt::Std;
 
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+
+my $VERSION = '0.2';
 my ($csv, $req_uni_ver, @f, $c);
-my %char_count = ();
 my $default_uni_ver = '6.3.0';
-my $output_csv = 0;
 
 my %opts = ();
 getopts ('hilsu:z', \%opts);
 
-sub usage {
+sub VERSION_MESSAGE { print "Version $VERSION\n"; }
+
+sub HELP_MESSAGE {
 	print <<_EOT_;
 
 Usage: $0 [option...] FONT_FILE...
@@ -56,8 +59,9 @@ Options:
 -z           List Unicode blocks with no glyph in font (hidden by default)
 
 _EOT_
-	exit (1);
 }
+
+sub usage { HELP_MESSAGE; exit(1); }
 
 sub list_supported_uni_ver {
 	print "Supported Unicode versions on this system:\n\n";
@@ -153,7 +157,7 @@ sub calculate_char_count {
 }
 
 sub print_output {
-	my ($count, $fontname, $dummy) = @_;
+	my ($count, $fontname, $output_csv, $dummy) = @_;
 	my $blocks = $FontCoverage::block_list;
 
 	print "\n=== " . $fontname . "\n\n" if ($fontname);
@@ -219,7 +223,6 @@ if (!@f) {
 
 if ($opts{'s'}) {
 	use Text::CSV;
-	$output_csv = 1;
 	$csv = Text::CSV->new();
 }
 
@@ -232,7 +235,7 @@ while (my $font = pop @f) {
 	next if (!@font_mapping);
 
 	%char_count = calculate_char_count (\@font_mapping);
-	print_output (\%char_count, $fontname);
+	print_output (\%char_count, $fontname, $opts{'s'});
 }
 
 exit 0;
