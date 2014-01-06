@@ -29,7 +29,7 @@ my ($csv, $req_uni_ver, @f, $c);
 my $default_uni_ver = '6.3.0';
 
 my %opts = ();
-getopts ('hilsu:z', \%opts);
+getopts ('chilsu:z', \%opts);
 
 sub VERSION_MESSAGE { print "Version $VERSION\n"; }
 
@@ -39,7 +39,7 @@ sub HELP_MESSAGE {
 Usage: $0 [option...] FONT_FILE...
 
 Prints a summary of Unicode blocks covered by Truetype/Opentype font with
-glyph count. For Truetype Collections, all TTFs within are counted separately.
+glyph count.
 
 Numbers appearing in output represents, in order:
  * Total number of code points assigned for specific Unicode range
@@ -50,6 +50,7 @@ All code points in Control Chars, Surrogates and Private Use Areas are treated
 as unassigned.
 
 Options:
+-c           Combine coverage of all fonts and print a single coverage list
 -h           Print this help
 -i           Ignore code points that have no corresponding glyphs
 -l           List supported Unicode versions on this system
@@ -101,7 +102,7 @@ sub populate_font_mapping {
 	while (my $font = pop @f) {
 		my ($fontname, $ms_cmap);
 
-		$fontname = $font->{'name'}->find_name(4);
+		$fontname = $font->{'name'}->read->find_name(4);
 		if (!$font->{'cmap'}) {
 			print STDERR "Cmap table not found for '$fontname', abandon parsing\n";
 			next;
@@ -226,16 +227,27 @@ if ($opts{'s'}) {
 	$csv = Text::CSV->new();
 }
 
-while (my $font = pop @f) {
+if ($opts{'c'}) {
 	my @font_mapping = ();
 	my %char_count;
-	my $fontname = $font->{'name'}->read->find_name(4); # 4 = Full font name
 
-	populate_font_mapping (\@font_mapping, ($font));
-	next if (!@font_mapping);
+	populate_font_mapping (\@font_mapping, @f);
+	die "All font scans failed\n" if (!@font_mapping);
 
 	%char_count = calculate_char_count (\@font_mapping);
-	print_output (\%char_count, $fontname, $opts{'s'});
+	print_output (\%char_count, "Combined fonts", $opts{'s'});
+} else {
+	while (my $font = pop @f) {
+		my @font_mapping = ();
+		my %char_count;
+
+		populate_font_mapping (\@font_mapping, ($font));
+		next if (!@font_mapping);
+		%char_count = calculate_char_count (\@font_mapping);
+
+		my $fontname = $font->{'name'}->read->find_name(4); # 4 = Full font name
+		print_output (\%char_count, $fontname, $opts{'s'});
+	}
 }
 
 exit 0;
