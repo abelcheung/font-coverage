@@ -51,10 +51,10 @@ The `-u` option allows one to compare the font against alternative versions of U
 
 ### Todo
 
-* [ ] user options to show/hide PUA
-* [ ] combined count of all fonts
-* [ ] code points in No_block & non-unicode glyphs not handled
-* [ ] well defined codepoint ignore list
-* [ ] cross platform support
-* [ ] scan *all* fonts used by system to get an idea about the system&rsquo;s unicode coverage in general
+- [ ] user options to show/hide PUA
+- [ ] combined count of all fonts
+- [ ] code points in No_block & non-unicode glyphs not handled
+- [ ] well defined codepoint ignore list
+- [ ] cross platform support
+- [ ] scan *all* fonts used by system to get an idea about the system&rsquo;s unicode coverage in general
 
