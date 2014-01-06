@@ -37,20 +37,24 @@ Supplementary Private Use Area-A (U+F0000-U+FFFFF) => 0 / 0 / 58
 Numbers appearing in output represents, in order:
 
 1. Total number of code points assigned for specific Unicode range
-1. Number of glyphs *assigned* in unicode standard for that range
-1. Number of glyphs *not assigned* in unicode standard for that range
+1. Number of glyphs **assigned** in unicode standard for that range
+1. Number of glyphs **not assigned** in unicode standard for that range
 
 So the output snippet above means all Music symbol related unicode ranges are 100% covered (though not for other ranges), and there are 11 extra glyphs in Musical Symbols not used by current version of Unicode.
 
-*Note*: all code points in Control Chars, Surrogates and Private Use Areas are treated as unassigned.
+**Note**: all code points in Control Chars, Surrogates and Private Use Areas are treated as unassigned.
 
+
+### Support for other Unicode versions
+
+The `-u` option allows one to compare the font against alternative versions of Unicode (by default current version 6.3.0 is used). Include files for latest update of all major Unicode versions (2.1 onwards) have been pre-generated, but if one somehow wants to compare against other versions, it is possible to invoke `gen-include-file.pl` to generate the ones you need. Please refer to the script itself for detail.
 
 ### Todo
 
-* user options to show/hide PUA
-* combined count of all fonts
-* code points in No_block & non-unicode glyphs not handled
-* well defined codepoint ignore list
-* cross platform support
-* scan *all* fonts used by system to get an idea about the system&rsquo;s unicode coverage in general
+* [ ] user options to show/hide PUA
+* [ ] combined count of all fonts
+* [ ] code points in No_block & non-unicode glyphs not handled
+* [ ] well defined codepoint ignore list
+* [ ] cross platform support
+* [ ] scan *all* fonts used by system to get an idea about the system&rsquo;s unicode coverage in general
 
