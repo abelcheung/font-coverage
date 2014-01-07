@@ -104,13 +104,19 @@ sub populate_font_mapping {
 
 		$fontname = $font->{'name'}->read->find_name(4);
 		if (!$font->{'cmap'}) {
-			print STDERR "Cmap table not found for '$fontname', abandon parsing\n";
+			print STDERR "Cmap table not found, abandon parsing '$fontname'\n";
 			next;
 		}
 
 		print STDERR "\nStart scanning " . $fontname ." ...";
 
-		$opts{'i'} and $font->{'loca'}->read;
+		if ($opts{'i'}) {
+			if (!$font->{'loca'}) {
+				print STDERR "Loca table not found, abandon parsing '$fontname'\n";
+				next;
+			}
+			$font->{'loca'}->read;
+		}
 		$ms_cmap = $font->{'cmap'}->read->find_ms; # Microsoft unicode cmap table
 
 		foreach (keys %{$ms_cmap->{'val'}}) {
