@@ -100,10 +100,10 @@ sub populate_font_mapping {
 	my ($font_mapping, @f) = @_;
 
 	while (my $font = pop @f) {
-		my ($fontname, $ms_cmap);
+		my ($fontname, $cmap, $ms_cmap);
 
 		$fontname = $font->{'name'}->read->find_name(4);
-		if (!$font->{'cmap'}) {
+		if ( !($cmap = $font->{'cmap'} // $font->{' PARENT'}->{'cmap'}) ) {
 			print STDERR "Cmap table not found for '$fontname', abandon parsing\n";
 			next;
 		}
@@ -111,7 +111,7 @@ sub populate_font_mapping {
 		print STDERR "\nStart scanning " . $fontname ." ...";
 
 		$opts{'i'} and $font->{'loca'}->read;
-		$ms_cmap = $font->{'cmap'}->read->find_ms; # Microsoft unicode cmap table
+		$ms_cmap = $cmap->read->find_ms; # Microsoft unicode cmap table
 
 		foreach (keys %{$ms_cmap->{'val'}}) {
 			# check if glyph really exists with -i option
