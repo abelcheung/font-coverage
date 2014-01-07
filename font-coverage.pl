@@ -166,6 +166,7 @@ sub calculate_char_count {
 sub print_output {
 	my ($count, $fontname, $output_csv, $dummy) = @_;
 	my $blocks = $FontCoverage::block_list;
+	my ($total_cps, $total_glyphs);
 
 	print "\n=== " . $fontname . "\n\n" if ($fontname);
 
@@ -176,6 +177,10 @@ sub print_output {
 	}
 
 	foreach (sort {$blocks->{$a}{'start'} <=> $blocks->{$b}{'start'}} keys %{$count}) {
+
+		$total_cps += $blocks->{$_}{'assigned_total'};
+		$total_glyphs += $count->{$_}{'expected'} // 0;
+
 		# Don't print unicode blocks for which the font has no glyph
 		if ( !$opts{'z'} ) {
 			next if ( (!$count->{$_}{'expected'}) &&
@@ -201,6 +206,8 @@ sub print_output {
 					$count->{$_}{'unexpected'};
 		}
 	}
+	printf "Unicode coverage = %d / %d = %.2f\n",
+		$total_glyphs, $total_cps, $total_glyphs / $total_cps * 100;
 }
 
 foreach (@ARGV) {
