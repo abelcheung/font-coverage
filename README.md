@@ -17,15 +17,21 @@ Note that due to certain bug in Font::TTF this script may not be able to read al
 
 Invoking `font-coverage.pl -h` produces a list of options.
 
-Usage example:
+#### Usage example
 
+Print statistics of each font separately
     # font-coverage.pl a.ttf dir/b.otf moredir/c.ttc
+
+Print combined statistics
+    # font-coverage.pl -c a.ttf dir/b.otf moredir/c.ttc
+
+Using Unicode 5.2.0 as basis, generate CSV output, plus demonstrating other options
     # font-coverage.pl -i -s -z -u 5.2.0 a.ttf
 
 Running the script on [Musica](http://users.teilar.gr/~g1951d/) truetype font produces output like:
 
 ```
-......
+..............
 Geometric Shapes (U+25A0-U+25FF) => 96 / 1 / 0
 Miscellaneous Symbols (U+2600-U+26FF) => 256 / 7 / 0
 Byzantine Musical Symbols (U+1D000-U+1D0FF) => 246 / 246 / 0
@@ -56,5 +62,5 @@ The `-u` option allows one to compare the font against alternative versions of U
 * points in No_block & non-unicode glyphs not handled
 * well defined codepoint ignore list
 * cross platform support
-* scan *all* fonts used by system to get an idea about the system&rsquo;s unicode coverage in general
+* scan *all* fonts used by system to get an idea about the system&rsquo;s unicode coverage in general, like what BabelMap does
 

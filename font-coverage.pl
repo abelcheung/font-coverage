@@ -24,9 +24,9 @@ use Getopt::Std;
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
-my $VERSION = '0.2';
+my $VERSION = '0.2.1';
 my ($csv, $req_uni_ver, @f, $c);
-my $default_uni_ver = '6.3.0';
+my $default_uni_ver = '7.0.0';
 
 my %opts = ();
 getopts ('chilsu:z', \%opts);
@@ -55,7 +55,7 @@ Options:
 -i           Ignore code points that have no corresponding glyphs
 -l           List supported Unicode versions on this system
 -s           Generate CSV output format
--u VERSION   Use another Unicode version as reference (default 6.3.0)
+-u VERSION   Use another Unicode version as reference (default 7.0.0)
                available versions are in include/ folder
 -z           List Unicode blocks with no glyph in font (hidden by default)
 
