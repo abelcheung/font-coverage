@@ -20,12 +20,15 @@ Invoking `font-coverage.pl -h` produces a list of options.
 #### Usage example
 
 Print statistics of each font separately
+
     # font-coverage.pl a.ttf dir/b.otf moredir/c.ttc
 
 Print combined statistics
+
     # font-coverage.pl -c a.ttf dir/b.otf moredir/c.ttc
 
 Using Unicode 5.2.0 as basis, generate CSV output, plus demonstrating other options
+
     # font-coverage.pl -i -s -z -u 5.2.0 a.ttf
 
 Running the script on [Musica](http://users.teilar.gr/~g1951d/) truetype font produces output like:
