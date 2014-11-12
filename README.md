@@ -9,7 +9,7 @@ It is inspired from the versatile [FontForge](http://fontforge.org/) suite (actu
 * [Font::TTF](http://search.cpan.org/~mhosken/Font-TTF-1.03/) Perl module
 * [Text::CSV](http://search.cpan.org/~makamaka/Text-CSV-1.32/) (optional, to produce CSV output)
 
-Note that due to certain bug in Font::TTF this script may not be able to read all fonts embedded inside TTCs.
+Note that due to certain bug in Font::TTF this script may not be able to read all fonts embedded inside TTCs. This is fixed in Font::TTF 1.04.
 
 ### Usage
 
