@@ -236,7 +236,7 @@ if (!@f) {
 }
 
 if ($opts{'s'}) {
-	use Text::CSV;
+	require Text::CSV;
 	$csv = Text::CSV->new();
 }
 
