@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 ################################################################################
-# Copyright (c) 2014, Abel Cheung
+# Copyright (c) 2014-19, Abel Cheung
 # FontCoverage is licensed under BSD 2-clause license.
 #
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
