@@ -1,4 +1,4 @@
-# font-coverage
+# font-coverage 0.3
 
 This script is for scanning font files and listing their unicode coverage by unicode blocks. Currently truetype fonts (TTF), opentype fonts (OTF) and truetype collections (TTC) are supported.
 
