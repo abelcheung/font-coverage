@@ -13,7 +13,7 @@ Note that due to certain bug in Font::TTF this script may not be able to read al
 
 ### Usage
 
-    font-coverage.pl [option...] FONT_FILE...
+    font-coverage.pl [option…] FONT_FILE…
 
 Invoking `font-coverage.pl -h` produces a list of options.
 
@@ -56,7 +56,7 @@ So the output snippet above means all Music symbol related unicode ranges are 10
 
 ### Support for other Unicode versions
 
-The `-u` option allows one to compare the font against alternative versions of Unicode (by default current version 6.3.0 is used). Include files for latest update of all major Unicode versions (2.1 onwards) have been pre-generated, but if one somehow wants to compare against other versions, it is possible to invoke `gen-include-file.pl` to generate the ones you need. Please refer to the script itself for detail.
+The `-u` option allows one to compare the font against alternative versions of Unicode (by default 12.1.0 is used, as of 2019 ). Include files for latest update of all major Unicode versions (2.1 onwards) have been pre-generated, but if one somehow wants to compare against other versions, it is possible to invoke `gen-include-file.pl` to generate the ones you need. Please refer to the script itself for detail.
 
 ### Todo
 

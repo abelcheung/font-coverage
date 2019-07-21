@@ -26,7 +26,7 @@ $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
 my $VERSION = '0.2.1';
 my ($csv, $req_uni_ver, @f, $c);
-my $default_uni_ver = '7.0.0';
+my $default_uni_ver = '12.1.0';
 
 my %opts = ();
 getopts ('chilsu:z', \%opts);
