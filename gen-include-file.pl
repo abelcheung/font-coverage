@@ -17,6 +17,8 @@
 ################################################################################
 
 use strict;
+use version;
+use 5.014; #s///r
 use File::Temp qw( tempfile );
 use File::Path qw( make_path );
 
@@ -44,7 +46,7 @@ my $uni_ver = $ARGV[0];
 if (! -d 'Unicode-mirror/'.$uni_ver ) { die "No UCD data for Unicode version '$uni_ver' is found; please mirror from unicode.org\n"; }
 
 my ($UO_unicodedatafile, $UO_blocksfile);
-if ($uni_ver gt "4.1") {
+if (ver_compare ($uni_ver, "4.1") == 1) {
 	$UO_unicodedatafile = "Unicode-mirror/$uni_ver/ucd/UnicodeData.txt";
 	$UO_blocksfile = "Unicode-mirror/$uni_ver/ucd/Blocks.txt";
 } else {
@@ -129,9 +131,11 @@ while (<$uniblock>) {
 	my $assigned_total = 0;
 
 	# Format change in Blocks.txt since Unicode 3.1
-	if ( ($uni_ver ge "3.1") && /^([[:xdigit:]]+)\.\.([[:xdigit:]]+);\s*(.+)?\s*$/ ) {
+	if ( (ver_compare ($uni_ver, "3.1") >= 0)
+		&& /^([[:xdigit:]]+)\.\.([[:xdigit:]]+);\s*(.+)?\s*$/ ) {
 		$start = hex($1); $end = hex($2); $desc = $3;
-	} elsif ( ($uni_ver lt "3.1") && /^([[:xdigit:]]+);\s*([[:xdigit:]]+);\s*(.+)?\s*$/ ) {
+	} elsif ( (ver_compare ($uni_ver, "3.1") < 0)
+		&& /^([[:xdigit:]]+);\s*([[:xdigit:]]+);\s*(.+)?\s*$/ ) {
 		$start = hex($1); $end = hex($2); $desc = $3;
 	}
 
@@ -156,7 +160,7 @@ while (<$uniblock>) {
 	# versions, while one of the Specials blocks with only 0xFEFF code
 	# point is dropped completely (fonts shouldn't have that glyph because
 	# it's BOM!)
-	if ($uni_ver lt "3.2") {
+	if (ver_compare ($uni_ver, "3.2") < 0 ) {
 		next if ($start == 0xFEFF);
 		if ($start == 0xF0000) { $desc = 'Supplementary Private Use Area-A'; }
 		if ($start == 0x100000) { $desc = 'Supplementary Private Use Area-B'; }
@@ -213,3 +217,9 @@ chmod 0644, $dest;
 print STDERR "File generation is successful.\n";
 
 exit 0;
+
+sub ver_compare {
+	my $v1 = version->parse( shift =~ s/-Update$/-Update0/r =~ s/-Update/./r );
+	my $v2 = version->parse( shift =~ s/-Update$/-Update0/r =~ s/-Update/./r );
+	return $v1 cmp $v2;
+}
