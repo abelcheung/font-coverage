@@ -89,7 +89,7 @@ while(<$unidata>) {
 
 	# Only count BMP, SMP, SIP planes to save time & space
 	# Other planes have no displayable glyph yet
-	next if ($code >= 0x30000);
+	next if ($code >= 0x40000);
 
 	if ($desc =~ /^<.*First>$/) {
 		$first = $code;
