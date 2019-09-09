@@ -73,8 +73,9 @@ sub list_supported_uni_ver {
 	exit (0);
 }
 
-usage if ( $opts{'h'} || (! @ARGV) );
+usage if ( $opts{'h'} );
 list_supported_uni_ver if $opts{'l'};
+usage if (! @ARGV );
 
 $req_uni_ver = $opts{'u'} // $default_uni_ver;
 if (! -d "include/$req_uni_ver") {
