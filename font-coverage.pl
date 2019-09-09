@@ -21,6 +21,7 @@ use Font::TTF;
 use Font::TTF::Font;
 use Font::TTF::Ttc;
 use Getopt::Std;
+use Cwd qw(realpath);
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 
@@ -64,11 +65,13 @@ _EOT_
 
 sub usage { HELP_MESSAGE; exit(1); }
 
+my $baseDir = realpath($0) =~ s![^/]+$!!r;
+
 sub list_supported_uni_ver {
 	print "Supported Unicode versions on this system:\n\n";
-	foreach (<include/*>) {
-		s#^include/##;
-		print $_."\n" if ( -f "include/$_/FontCoverage.pm" );
+	foreach (<$baseDir/include/*>) {
+		s#^$baseDir/include/##;
+		print $_."\n" if ( -f "$baseDir/include/$_/FontCoverage.pm" );
 	}
 	exit (0);
 }
@@ -78,14 +81,14 @@ list_supported_uni_ver if $opts{'l'};
 usage if (! @ARGV );
 
 $req_uni_ver = $opts{'u'} // $default_uni_ver;
-if (! -d "include/$req_uni_ver") {
+if (! -d "$baseDir/include/$req_uni_ver") {
 	print STDERR "No data for Unicode version '$req_uni_ver'\n";
 	print STDERR "Use '$0 -l' to list supported versions\n";
 	exit (3);
 }
 
 # Include data for appropriate unicode version
-unshift @INC, "./include/$req_uni_ver";
+unshift @INC, "$baseDir/include/$req_uni_ver";
 require FontCoverage;
 
 # strict warning suppresion
