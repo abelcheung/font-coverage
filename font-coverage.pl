@@ -17,6 +17,8 @@
 ################################################################################
 
 use strict;
+use 5.014;
+
 use Font::TTF;
 use Font::TTF::Font;
 use Font::TTF::Ttc;
@@ -56,7 +58,7 @@ Options:
 -i           Ignore code points that have no corresponding glyphs
 -l           List supported Unicode versions on this system
 -s           Generate CSV output format
--u VERSION   Use another Unicode version as reference (default 7.0.0)
+-u VERSION   Use another Unicode version as reference (default $default_uni_ver)
                available versions are in include/ folder
 -z           List Unicode blocks with no glyph in font (hidden by default)
 
